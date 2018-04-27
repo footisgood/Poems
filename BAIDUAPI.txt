@@ -1,0 +1,2 @@
+应用名称       AppID           API Key                     Secret Key                     包名 
+诗歌辅助学习  11162123  1aLVLZBgBu0js571O8i7TnbG  6VoH8Sm4Wbd9qfhKnG6XEI2Zjt9zj9R5  百度语音 不需要
