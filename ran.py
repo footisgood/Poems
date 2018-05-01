@@ -27,38 +27,40 @@ def speak(filename , str):
         time.sleep(0.3)
     pygame.mixer.music.stop()
 
-def chuti(now_list,hide):
-    k=len(now_list)  #有几句
-    n=len(now_list[0])  #一句有几个字
-    no=random.randrange(k-1)
-    s_timu = ''
-    s_out=''
-    for i in range(k-1):
-        if i != no :
-            s_out=s_out + now_list[i] + '  '
-            s_timu = s_timu + now_list[i]
-        else:
-            s_out = s_out + hide*k + '  '
-            s_timu = s_timu + '什么'
-    print (s_out)
-    text_surface = font.render(s_out, True, (0, 0, 255))
+def ShowIt(no , s_out,s_speak):
+    text_surface = font.render(str(no) + '.' + s_out, True, (0, 0, 255))
     screen.blit(background, (0, 0))
-    screen.blit(text_surface, (100, 200))
+    screen.blit(text_surface, (100, 260))
     pygame.display.update()
 
     filename=str(time.time())
     filename=filename.replace('.','k')
     filename += 'audio.mp3'
-    speak(filename , s_timu)
+    speak(filename , s_speak)
 
-def show_the_question(no):
-    global now_s , now_list ,data
+def ChuTiMu(no):  #出第no题，挑选进入now_list的列表
+    global now_s , now_list , data , all
     num = random.randrange(len(data))
     now_s = data[num].replace('。', '，')
     now_s = data[num].replace('？', '，')
     now_list = now_s.split('，')
-    print('No.%d :' % (no), end='')
-    chuti(now_list, '____')
+    k=len(now_list)  #有几句
+    n=len(now_list[0])  #一句有几个字
+    hiddenno=random.randrange(k-1)     #要隐藏的是第几句
+    s_speak = ''  #s_speak是读出来的，s_out是显示出来的
+    s_out=''
+    hide='_'
+    for i in range(k-1):
+        if i != hiddenno :
+            s_out=s_out + now_list[i] + '  '
+            s_speak = s_speak + now_list[i]
+        else:
+            s_out = s_out + hide*n + '  '
+            s_speak = s_speak + '什么'
+    all.setdefault(no, ['',''])
+    all[no] = [s_out , s_speak]   #all={1:['第一题的显示','第一题的读音']
+    print('No.%d :' % (no), s_out)
+    ShowIt(no , s_out , s_speak)
 
 if __name__ == '__main__':
     APP_ID = '11162123'
@@ -67,7 +69,7 @@ if __name__ == '__main__':
     client = AipSpeech(APP_ID, API_KEY, SECRET_KEY)
 
     a=open(r'1.txt','r',encoding='gbk').read()
-    data=a.split('\n')
+    data=a.split('\n')   #data就是所有的古诗词，一首一行
     n=len(data)
     print ('-'*100)
     print ('|                       总载入著名诗句%d句'%(n) + ' '*60 + '|')
@@ -76,12 +78,13 @@ if __name__ == '__main__':
     pygame.init()
     screen = pygame.display.set_mode((985 , 696), 0, 32)
     font = pygame.font.Font("msyhbd.ttc", 30)
-    text_surface = font.render(u"准备开始啦", True, (0, 0, 255))
+    text_surface = font.render(u"按→就可以开始啦……", True, (200, 0, 255))
     background = pygame.image.load("background1.jpg").convert()
     screen.blit(background, (0, 0))
-    screen.blit(text_surface, (100, 110))
+    screen.blit(text_surface, (100, 210))
     pygame.display.update()
-    weak=[]
+    all={}
+    weak=[]   #weak记录掌握不好的序号就可以了
     no=0
     goon = True
     while goon :
@@ -90,20 +93,27 @@ if __name__ == '__main__':
                 os.exit()
             if event.type == KEYDOWN :
                 if event.key == K_RIGHT:  # 获取键盘字母a
+                    no = len(all)
                     no +=1
-                    show_the_question(no)
-                elif event.key == K_LEFT:  # 获取键盘空格键
-                    pass
-                elif event.key == K_SPACE:  # 获取键盘左键
+                    ChuTiMu(no)  #出题no，并把这个题目append到all
+                elif event.key == K_LEFT:
+                    if no>1 :
+                        no -= 1
+                        ShowIt(no , all[no][0] , all[no][1])
+                elif event.key == K_x:
+                    weak.append(no)
+                    print (all)
+                    print (weak)
+                elif event.key == K_SPACE:
                     goon = False
 
     print (u'刚才发现你掌握不好的诗句共有 %d 句，分别是：'%(len(weak)))
     for i in range(len(weak)):
-        print (weak[i])
+        print (all[weak[i]][0])
     pygame.quit()
     path = 'audio\\'
     for i in os.listdir(path):
         path_file = os.path.join(path,i)
         if os.path.isfile(path_file):
             os.remove(path_file)
-            print('deleted ' + path_file)
+            # print('deleted ' + path_file)
