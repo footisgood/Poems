@@ -40,7 +40,7 @@ def ShowIt(no , s_out,s_speak):
 
 def ChuTiMu(no):  #出第no题，挑选进入now_list的列表
     global now_s , now_list , data , all
-    num = random.randrange(len(data))
+    num = random.randint(0,len(data))
     now_s = data[num].replace('。', '，')
     now_s = data[num].replace('？', '，')
     now_list = now_s.split('，')
@@ -57,8 +57,8 @@ def ChuTiMu(no):  #出第no题，挑选进入now_list的列表
         else:
             s_out = s_out + hide*n + '  '
             s_speak = s_speak + '什么'
-    all.setdefault(no, ['',''])
-    all[no] = [s_out , s_speak]   #all={1:['第一题的显示','第一题的读音']
+    all.setdefault(no, ['' , '' , 0])
+    all[no] = [s_out , s_speak , num]   #all={1:['第一题的显示','第一题的读音' , 在题库data中的序号]
     print('No.%d :' % (no), s_out)
     ShowIt(no , s_out , s_speak)
 
@@ -83,7 +83,8 @@ if __name__ == '__main__':
     screen.blit(background, (0, 0))
     screen.blit(text_surface, (100, 210))
     pygame.display.update()
-    all={}
+    all={}  #所有出的题目
+    #all的数据结构为：all={1:['第一题的显示','第一题的读音'，该题目在题库data中的序号]
     weak=[]   #weak记录掌握不好的序号就可以了
     no=0
     goon = True
@@ -101,15 +102,16 @@ if __name__ == '__main__':
                         no -= 1
                         ShowIt(no , all[no][0] , all[no][1])
                 elif event.key == K_x:
-                    weak.append(no)
-                    print (all)
-                    print (weak)
+                    weak.append(all[no][2])
                 elif event.key == K_SPACE:
                     goon = False
-
+    for i in range(3):
+        print ('*'*100)
+    print ('*************结束游戏************')
     print (u'刚才发现你掌握不好的诗句共有 %d 句，分别是：'%(len(weak)))
+
     for i in range(len(weak)):
-        print (all[weak[i]][0])
+        print (data[weak[i]])
     pygame.quit()
     path = 'audio\\'
     for i in os.listdir(path):
